@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: CloudFormation template for Hotel App with DynamoDB and App Runner, without networking.
+Description: CloudFormation template for Hotel app with DynamoDB and App Runner, without networking.
 
 Parameters:
   HotelName:
@@ -10,7 +10,6 @@ Parameters:
     Type: String
     Default: dev
     Description: Enter a name for the Environment. Default is dev, this is used later in the workshop to tag the environments
-
 
 Resources:
   # DynamoDB Table for Rooms
@@ -30,7 +29,7 @@ Resources:
       SSESpecification:
         SSEEnabled: true # Enable server-side encryption for the table
 
-  # IAM Role for App Runner to access DynamoDB
+  # IAM Role for AppRunner to access DynamoDB
   AppRunnerInstanceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -88,24 +87,8 @@ Resources:
               - "sts:AssumeRole"
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
-  
-  #Sample Alarm - we will use this later to prove AWS CodePipeline Condition Gates
-  DynamoDBReadCapacityAlarm:
-    Type: "AWS::CloudWatch::Alarm"
-    Properties:
-      AlarmName: !Sub "HighReadCapacityAlarm-${AWS::StackName}-${AWS::Region}"
-      AlarmDescription: "Alarm if DynamoDB read capacity exceeds 80% of provisioned units"
-      Namespace: "AWS/DynamoDB"
-      MetricName: "ConsumedReadCapacityUnits"
-      Dimensions:
-        - Name: "TableName"
-          Value: !Ref RoomsTable
-      Statistic: "Average"
-      Period: 60
-      EvaluationPeriods: 1
-      Threshold: 4 # 80% of 5 ReadCapacityUnits
-      ComparisonOperator: "GreaterThanThreshold"
-    AppRunnerService:
+
+  AppRunnerService:
     Type: AWS::AppRunner::Service
     Properties:
       ServiceName: !Sub "Hotel-${AWS::StackName}-${AWS::Region}"
